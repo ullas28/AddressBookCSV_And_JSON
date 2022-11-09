@@ -1,14 +1,18 @@
 package com.bridgelabz;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.*;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,12 +36,12 @@ public class AddressBook {
         return new ArrayList<Contact>(contactList.values());
     }
 
-    public void displayMenu()  {
+    public void displayMenu() throws IOException, ParseException {
         boolean change = true;
         do {
             System.out.println("\n Select the operation you want to perform : ");
             System.out.println(
-                    "1.Add To Address Book\n2.Edit Existing Entry\n3.Delete Contact\n4.Display Address book\n5.Write to csv file\n6.Read data from file \n7.Exit Address book System");
+                    "1.Add To Address Book\n2.Edit Existing Entry\n3.Delete Contact\n4.Display Address book\n5.Write to csv file\n6.Read data from file \n7.Write Data To JSONFile \n8.Read Data From JSON File\n9.Exit Address book System");
             switch (scanner.nextInt()) {
                 case 1:
                     addContact();
@@ -56,6 +60,12 @@ public class AddressBook {
                     break;
                 case 6:
                     readDataFromCSVFile();
+                    break;
+                case 7:
+                    writeDataToJSONFile();
+                    break;
+                case 8:
+                    readDataFromJSONFile();
                     break;
                 default:
                     change = false;
@@ -262,6 +272,33 @@ public class AddressBook {
             }
             System.out.println("Successfully read from CSV file");
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeDataToJSONFile() {
+        try (Writer writer = Files.newBufferedWriter(Paths.get("Contact.json"))) {
+            Gson gson = new Gson();
+            String json = gson.toJson(contactList);
+            writer.write(json);
+            System.out.println("Successfully written to JSON file");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void readDataFromJSONFile() {
+        try (Reader reader = Files.newBufferedReader(Paths.get("Contact.json"))) {
+            JsonParser jsonParser = new JsonParser();
+            Object obj =  jsonParser.parse(reader);
+            JsonObject empjsonobj = (JsonObject)obj;
+            for (Map.Entry<String, JsonElement> str: empjsonobj.entrySet()) {
+                System.out.println(str.getKey()+"\t"+str.getValue()+"\n");
+            }
+            System.out.println("Successfully read from JSON file");
+        }
+        catch (Exception e){
             e.printStackTrace();
         }
     }
